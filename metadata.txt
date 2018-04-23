@@ -18,10 +18,11 @@ email=richard@zuidt.nl
 tags=geocoder, locator, filter, osm, nominatim
 
 tracker=https://github.com/rduivenvoorde/nominatim_locator_filter/issues
-homepage=https://github.com/rduivenvoorde/qgislocatorplugin
-repository=https://github.com/rduivenvoorde/nominatim_locator_filter.git
+homepage=https://github.com/rduivenvoorde/nominatim_locator_filters
+repository=https://github.com/rduivenvoorde/nominatim_locator_filter
 
 changelog=
+    0.2.1       fix repo url
     0.2.0       initial public release
 
 category=Filter
