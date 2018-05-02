@@ -1,5 +1,5 @@
 #/***************************************************************************
-# QgisLocator
+# Nominatim Locator Plugin
 #
 # This plugins can be used to connect the QgsLocator search bar to Geocoder services
 #							 -------------------

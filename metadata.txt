@@ -1,7 +1,7 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Nonimatim Locator Filter
+name=Nominatim Locator Filter
 description=This is a plugin which adds a Nominatim Locator Filter to QGIS
 about=Nominatim is a free Geocoder service provided by the OpenStreetMap project.
     A Locator Filter implements the fetching of data from internal or external sources.
@@ -9,7 +9,7 @@ about=Nominatim is a free Geocoder service provided by the OpenStreetMap project
     Because it is *NOT* allowed to use the Nominatim service as a 'search as you type' service,
     the locator will not fire a request unless you end your string with a space or enter.
 
-version=0.2.0
+version=0.2.1
 qgisMinimumVersion=3.0
 author=Richard Duivenvoorde, Zuidt
 email=richard@zuidt.nl
@@ -22,7 +22,7 @@ homepage=https://github.com/rduivenvoorde/nominatim_locator_filters
 repository=https://github.com/rduivenvoorde/nominatim_locator_filter
 
 changelog=
-    0.2.1       fix repo url
+    0.2.1       fix repo url, fix name in metadata.txt
     0.2.0       initial public release
 
 category=Filter
