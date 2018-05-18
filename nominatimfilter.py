@@ -148,4 +148,4 @@ class NominatimLocatorFilter(QgsLocatorFilter):
         self.iface.mapCanvas().refresh()
 
     def info(self, msg=""):
-        QgsMessageLog.logMessage('{} {}'.format(self.__class__.__name__, msg), 'QgsLocatorFilter', Qgis.Info)
+        QgsMessageLog.logMessage('{} {}'.format(self.__class__.__name__, msg), 'NominatimLocatorFilter', Qgis.Info)

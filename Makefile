@@ -116,7 +116,7 @@ zip: desymlink deploy dclean
 	# The zip target deploys the plugin and creates a zip file with the deployed
 	# content. You can then upload the zip file on http://plugins.qgis.org
 	rm -f $(PLUGINNAME)*.zip
-	cd $(HOME)/$(QGISDIR)/python/plugins; zip -9r $(CURDIR)/$(PLUGINNAME)_$(VERSION).zip $(PLUGINNAME)
+	cd $(HOME)/$(QGISDIR)/python/plugins; zip -9r $(CURDIR)/repo/$(PLUGINNAME)_$(VERSION).zip $(PLUGINNAME)
 
 # Create a symlink for development in the default profile python plugins dir
 symlink:

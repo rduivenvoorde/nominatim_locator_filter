@@ -9,7 +9,9 @@ about=Nominatim is a free Geocoder service provided by the OpenStreetMap project
     Because it is *NOT* allowed to use the Nominatim service as a 'search as you type' service,
     the locator will not fire a request unless you end your string with a space or enter.
 
-version=0.2.1
+    Read more: <a href="http://www.qgis.nl/2018/05/16/english-coding-a-qgslocator-plugin/?lang=en">http://www.qgis.nl/2018/05/16/english-coding-a-qgslocator-plugin</a>
+
+version=0.2.2
 qgisMinimumVersion=3.0
 author=Richard Duivenvoorde, Zuidt
 email=richard@zuidt.nl
@@ -18,17 +20,18 @@ email=richard@zuidt.nl
 tags=geocoder, locator, filter, osm, nominatim
 
 tracker=https://github.com/rduivenvoorde/nominatim_locator_filter/issues
-homepage=https://github.com/rduivenvoorde/nominatim_locator_filters
+homepage=https://github.com/rduivenvoorde/nominatim_locator_filter
 repository=https://github.com/rduivenvoorde/nominatim_locator_filter
 
 changelog=
+    0.2.2       fix homepage url, messagelog title, remove experimental flag
     0.2.1       fix repo url, fix name in metadata.txt
     0.2.0       initial public release
 
 category=Filter
 
 # experimental flag
-experimental=True
+experimental=False
 
 # change icon
 icon=icons/icon.svg
