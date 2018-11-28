@@ -2,7 +2,7 @@
 
 [general]
 name=Nominatim Locator Filter
-description=This is a plugin which adds a Nominatim Locator Filter to QGIS
+description=This is a plugin which adds a Nominatim Locator Filter (Geocoder) to QGIS
 about=Nominatim is a free Geocoder service provided by the OpenStreetMap project.
     A Locator Filter implements the fetching of data from internal or external sources.
 
