@@ -24,7 +24,7 @@ homepage=https://github.com/rduivenvoorde/nominatim_locator_filter
 repository=https://github.com/rduivenvoorde/nominatim_locator_filter
 
 changelog=
-    0.2.3       
+    0.2.3       remove debug msg which throws error (issue#1 thanks Harrissou)
     0.2.2       fix homepage url, messagelog title, remove experimental flag
     0.2.1       fix repo url, fix name in metadata.txt
     0.2.0       initial public release
