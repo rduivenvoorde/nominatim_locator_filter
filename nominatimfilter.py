@@ -126,25 +126,9 @@ class NominatimLocatorFilter(QgsLocatorFilter):
         transform = QgsCoordinateTransform(results_crs, dest_crs, QgsProject.instance())
         r = transform.transformBoundingBox(rect)
         self.iface.mapCanvas().setExtent(r, False)
-        # map the result types to generic GeocoderLocator types to determine the zoom
-        # BUT only if the extent < 100 meter (as for other objects it is probably ok)
-        # mmm, some objects return 'type':'province', but extent is point
-        scale_denominator = self.ZIP  # defaulting to something
-        # TODO add other types?
-        if doc['type'] in ['house', 'information']:
-            scale_denominator = self.ADDRESS
-        elif doc['type'] in ['way', 'motorway_junction', 'cycleway']:
-            scale_denominator = self.STREET
-        elif doc['type'] in ['postcode']:
-            scale_denominator = self.ZIP
-        elif doc['type'] in ['city']:
-            scale_denominator = self.CITY
-        elif doc['type'] in ['island']:
-            scale_denominator = self.ISLAND
-        elif doc['type'] in ['administrative']:  # ?? can also be a city etc...
-            scale_denominator = self.COUNTRY
-
-        self.iface.mapCanvas().zoomScale(scale_denominator)
+        # sometimes Nominatim has result with very tiny boundingboxes, let's set a minimum
+        if self.iface.mapCanvas().scale() < 500:
+            self.iface.mapCanvas().zoomScale(500)
         self.iface.mapCanvas().refresh()
 
     def info(self, msg=""):
