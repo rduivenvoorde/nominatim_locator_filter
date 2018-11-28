@@ -11,7 +11,7 @@ about=Nominatim is a free Geocoder service provided by the OpenStreetMap project
 
     Read more: <a href="http://www.qgis.nl/2018/05/16/english-coding-a-qgslocator-plugin/?lang=en">http://www.qgis.nl/2018/05/16/english-coding-a-qgslocator-plugin</a>
 
-version=0.2.2
+version=0.2.3
 qgisMinimumVersion=3.0
 author=Richard Duivenvoorde, Zuidt
 email=richard@zuidt.nl
@@ -24,6 +24,7 @@ homepage=https://github.com/rduivenvoorde/nominatim_locator_filter
 repository=https://github.com/rduivenvoorde/nominatim_locator_filter
 
 changelog=
+    0.2.3       
     0.2.2       fix homepage url, messagelog title, remove experimental flag
     0.2.1       fix repo url, fix name in metadata.txt
     0.2.0       initial public release
