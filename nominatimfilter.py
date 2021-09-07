@@ -39,7 +39,7 @@ class NominatimLocatorFilter(QgsLocatorFilter):
 
     USER_AGENT = b'Mozilla/5.0 QGIS NominatimLocatorFilter'
 
-    SEARCH_URL = 'http://nominatim.openstreetmap.org/search?format=json&q='
+    SEARCH_URL = 'https://nominatim.openstreetmap.org/search?format=json&q='
     # test url to be able to force errors
     #SEARCH_URL = 'http://duif.net/cgi-bin/qlocatorcheck.cgi?q='
 
