@@ -25,7 +25,7 @@ VERSION=$(shell cat metadata.txt | grep version= | sed -e 's,version=,,')
 
 PY_FILES = \
 	__init__.py \
-	nominatimfilter.py networkaccessmanager.py
+	nominatimfilter.py
 
 EXTRAS = metadata.txt
 
