@@ -119,7 +119,7 @@ class NominatimLocatorFilter(QgsLocatorFilter):
         # "boundingbox": ["52.641015", "52.641115", "5.6737302", "5.6738302"]
         rect = QgsRectangle(float(extent[2]), float(extent[0]), float(extent[3]), float(extent[1]))
         dest_crs = QgsProject.instance().crs()
-        results_crs = QgsCoordinateReferenceSystem(4326, QgsCoordinateReferenceSystem.PostgisCrsId)
+        results_crs = QgsCoordinateReferenceSystem.fromEpsgId(4326)
         transform = QgsCoordinateTransform(results_crs, dest_crs, QgsProject.instance())
         r = transform.transformBoundingBox(rect)
         self.iface.mapCanvas().setExtent(r, False)
