@@ -114,7 +114,12 @@ class NominatimLocatorFilter(QgsLocatorFilter):
 
     def triggerResult(self, result):
         self.info("UserClick: {}".format(result.displayString))
-        doc = result.userData
+        # Newer Version of PyQT does not expose the .userData (Leading to core dump)
+        # Try via get Function, otherwise access attribute
+        try:
+            doc = result.getUserData()
+        except:
+            doc = result.userData
         extent = doc['boundingbox']
         # "boundingbox": ["52.641015", "52.641115", "5.6737302", "5.6738302"]
         rect = QgsRectangle(float(extent[2]), float(extent[0]), float(extent[3]), float(extent[1]))
