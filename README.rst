@@ -40,7 +40,7 @@ QGIS Nominatim Locator Extensions
 .. image:: ./images/nominatim_locator_show_result.JPG
   :width: 600
 
-3) Support Global and local (inside Map Canvas) search. Use & for local search (i.e. "osm &Vienna ").
+3) Support Global and local search. Use & for local search (i.e. "osm &Vienna ").
 
 Global search:
 
