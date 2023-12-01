@@ -26,3 +26,30 @@ http://api.qgis.org/api/master/html/classQgisInterface.html
 http://python.qgis.org/api/core/Locator/QgsLocator.html
 
 http://python.qgis.org/api/core/Locator/QgsLocatorFilter.html
+
+QGIS Nominatim Locator Extensions
+=================================
+
+1) Show icons with the search results to visualize the geometry types. This simplifies the selection of the search result.
+
+.. image:: ./images/nominatim_locator_icons.JPG
+  :width: 400
+
+2) Show result in map canvas using QgsRubberBand.
+
+.. image:: ./images/nominatim_locator_show_result.JPG
+  :width: 600
+
+3) Support Global and local search. Use & for local search (i.e. "osm &Vienna ").
+
+Global search:
+
+.. image:: ./images/nominatim_locator_global_search.JPG
+  :width: 800
+
+Local search (restricts results to map canvas extents):
+
+.. image:: ./images/nominatim_locator_local_search.JPG
+  :width: 800
+
+

@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 
 from qgis.core import Qgis, QgsMessageLog, QgsLocatorFilter, QgsLocatorResult, QgsRectangle, \
-    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsBlockingNetworkRequest
+    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsNetworkAccessManager, QgsNetworkReplyContent, QgsGeometry, QgsCoordinateTransform, QgsPointXY, QgsWkbTypes
 
+from qgis.gui import QgsRubberBand
 from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtGui import QPixmap,QIcon,QColor,QPainter
 
-import json
-
+import json, os
+from osgeo import ogr, osr
 
 class NominatimFilterPlugin:
 
     def __init__(self, iface):
 
         self.iface = iface
-
+        self.iface.rb = QgsRubberBand(self.iface.mapCanvas(),QgsWkbTypes.GeometryType.Polygon)
         self.filter = NominatimLocatorFilter(self.iface)
 
         # THIS is not working?? As in show_problem never called
@@ -29,9 +31,12 @@ class NominatimFilterPlugin:
         pass
 
     def unload(self):
+        self.reset_Rubberband()
         self.iface.deregisterLocatorFilter(self.filter)
         #self.filter.resultProblem.disconnect(self.show_problem)
-
+        
+    def reset_Rubberband(self):
+        self.iface.rb.reset()
 
 # SEE: https://github.com/qgis/QGIS/blob/master/src/core/locator/qgslocatorfilter.h
 #      for all attributes/members/functions to be implemented
@@ -39,10 +44,11 @@ class NominatimLocatorFilter(QgsLocatorFilter):
 
     USER_AGENT = b'Mozilla/5.0 QGIS NominatimLocatorFilter'
 
-    SEARCH_URL = 'https://nominatim.openstreetmap.org/search?format=json&q='
+    #SEARCH_URL = 'https://nominatim.openstreetmap.org/search?format=json&q='
     # test url to be able to force errors
     #SEARCH_URL = 'http://duif.net/cgi-bin/qlocatorcheck.cgi?q='
-
+    SEARCH_URL = 'https://nominatim.openstreetmap.org/search?polygon_geojson=1&format=json&polygon_threshold=0&limit=30&q='
+    
     # some magic numbers to be able to zoom to more or less defined levels
     ADDRESS = 1000
     STREET = 1500
@@ -57,6 +63,7 @@ class NominatimLocatorFilter(QgsLocatorFilter):
     def __init__(self, iface):
         # you REALLY REALLY have to save the handle to iface, else segfaults!!
         self.iface = iface
+        self.rb = iface.rb
         super(QgsLocatorFilter, self).__init__()
 
     def name(self):
@@ -66,13 +73,13 @@ class NominatimLocatorFilter(QgsLocatorFilter):
         return NominatimLocatorFilter(self.iface)
 
     def displayName(self):
-        return 'Nominatim Geocoder (end with space to search)'
+        return 'Nominatim Geocoder (end with space to search, use &<txt> for local search)'
 
     def prefix(self):
         return 'osm'
 
     def fetchResults(self, search, context, feedback):
-
+        self.rb.reset()
         if len(search) < 2:
             return
 
@@ -82,8 +89,13 @@ class NominatimLocatorFilter(QgsLocatorFilter):
         if search[-1] != ' ':
             return
 
+        if search[0] == '&':
+            transform = QgsCoordinateTransform(QgsProject.instance().crs(),QgsCoordinateReferenceSystem("EPSG:4326"), QgsProject.instance())
+            ext = transform.transform(self.iface.mapCanvas().extent())
+            search = search[1:] + '&bounded=1&viewbox=' + str(ext.xMinimum()) + ',' + str(ext.yMinimum()) + ',' + str(ext.xMaximum()) + ',' + str(ext.yMaximum())
+
         url = '{}{}'.format(self.SEARCH_URL, search)
-        self.info('Search url {}'.format(url))
+        #self.info('Search url {}'.format(url))
         try:
             # see https://operations.osmfoundation.org/policies/nominatim/
             # "Pro4 vide a valid HTTP Referer or User-Agent identifying the application (QGIS geocoder)"
@@ -91,20 +103,45 @@ class NominatimLocatorFilter(QgsLocatorFilter):
             #headers = {b'User-Agent': self.USER_AGENT}
 
             # nam = Network Access Manager
-            nam = QgsBlockingNetworkRequest()
+            #nam = QgsBlockingNetworkRequest()
+            nam = QgsNetworkAccessManager.instance()
             request = QNetworkRequest(QUrl(url))
             request.setHeader(QNetworkRequest.UserAgentHeader, self.USER_AGENT)
-            nam.get(request, forceRefresh=True)
-            reply = nam.reply()
+            reply: QgsNetworkReplyContent = nam.blockingGet(request)
             if reply.attribute(QNetworkRequest.HttpStatusCodeAttribute) == 200:  # other codes are handled by NetworkAccessManager
                 content_string = reply.content().data().decode('utf8')
                 locations = json.loads(content_string)
+                pixmap = QPixmap()
+                nam2 = QgsNetworkAccessManager.instance()
                 for loc in locations:
                     result = QgsLocatorResult()
                     result.filter = self
                     result.displayString = '{} ({})'.format(loc['display_name'], loc['type'])
                     # use the json full item as userData, so all info is in it:
                     result.userData = loc
+               
+
+                    icon = QIcon()
+                    if loc.get('icon'):
+                        req = QNetworkRequest(QUrl(str(loc['icon'])))
+                        reply = nam2.blockingGet(req)
+                        data = reply.content().data()
+                        #data = urllib.request.urlopen(loc['icon']).read()
+                        pixmap.loadFromData(data)
+                        
+                    else:
+                        # get geomtype from geojson if no icon is provided
+                        pixmap = QPixmap('%s/icons/%s.png' % (os.path.dirname(__file__),loc['geojson']['type']))
+                    
+                    # change pixmap background color to white to support dark mode!
+                    painter = QPainter(pixmap)
+                    painter.setCompositionMode(QPainter.CompositionMode_DestinationOver)
+                    painter.fillRect(pixmap.rect(), QColor("white"))
+                    painter.end()
+
+                    icon.addPixmap(pixmap, QIcon.Normal, QIcon.Off)
+                    result.icon = icon
+                      
                     self.resultFetched.emit(result)
 
         except Exception as err:
@@ -113,25 +150,39 @@ class NominatimLocatorFilter(QgsLocatorFilter):
             self.info(err)
 
     def triggerResult(self, result):
-        self.info("UserClick: {}".format(result.displayString))
+        #self.info("UserClick: {}".format(result.displayString))
+        self.rb.reset()
         # Newer Version of PyQT does not expose the .userData (Leading to core dump)
         # Try via get Function, otherwise access attribute
         try:
             doc = result.getUserData()
         except:
             doc = result.userData
-        extent = doc['boundingbox']
-        # "boundingbox": ["52.641015", "52.641115", "5.6737302", "5.6738302"]
-        rect = QgsRectangle(float(extent[2]), float(extent[0]), float(extent[3]), float(extent[1]))
-        dest_crs = QgsProject.instance().crs()
-        results_crs = QgsCoordinateReferenceSystem.fromEpsgId(4326)
-        transform = QgsCoordinateTransform(results_crs, dest_crs, QgsProject.instance())
-        r = transform.transformBoundingBox(rect)
-        self.iface.mapCanvas().setExtent(r, False)
-        # sometimes Nominatim has result with very tiny boundingboxes, let's set a minimum
-        if self.iface.mapCanvas().scale() < 500:
-            self.iface.mapCanvas().zoomScale(500)
-        self.iface.mapCanvas().refresh()
+
+        geojson = doc['geojson']
+        feature = ogr.CreateGeometryFromJson(str(geojson))
+        wkt = feature.ExportToWkt()
+        targetSrs = self.iface.mapCanvas().mapSettings().destinationCrs().authid()
+        self.showRubberBand(wkt,QgsCoordinateReferenceSystem("EPSG:4326"),QgsCoordinateReferenceSystem(targetSrs))
 
     def info(self, msg=""):
         QgsMessageLog.logMessage('{} {}'.format(self.__class__.__name__, msg), 'NominatimLocatorFilter', Qgis.Info)
+
+    def showRubberBand(self,wkt,srcSRS,destSRS):
+        self.rb.reset()
+        xform = QgsCoordinateTransform(srcSRS,destSRS,QgsProject.instance())
+        geom = QgsGeometry.fromWkt(wkt)
+        geom.transform(xform)
+        self.rb.setToGeometry(geom,None)
+        self.rb.setColor(QColor(0, 0, 255, 60))
+        self.rb.setWidth(3)
+        
+        box = geom.boundingBox()
+        self.iface.mapCanvas().setExtent(box,False)
+        # sometimes Nominatim has result with very tiny boundingboxes, let's set a minimum
+        if ('POINT' in wkt.upper()) or self.iface.mapCanvas().scale() < 1000:
+            self.iface.mapCanvas().zoomScale(1000)
+        else:
+            self.iface.mapCanvas().zoomOut()
+                
+        self.iface.mapCanvas().refresh()
