@@ -16,7 +16,7 @@ class NominatimFilterPlugin:
     def __init__(self, iface):
 
         self.iface = iface
-        self.iface.rb = QgsRubberBand(self.iface.mapCanvas(),QgsWkbTypes.GeometryType.Polygon)
+        self.iface.rb = QgsRubberBand(self.iface.mapCanvas())
         self.filter = NominatimLocatorFilter(self.iface)
 
         # THIS is not working?? As in show_problem never called
@@ -43,6 +43,11 @@ class NominatimFilterPlugin:
 class NominatimLocatorFilter(QgsLocatorFilter):
 
     USER_AGENT = b'Mozilla/5.0 QGIS NominatimLocatorFilter'
+
+    # store icon mapping in mapicons dictionary
+    with open('%s/icons/mapicons.json' % os.path.dirname(__file__)) as f: 
+        data = f.read()
+    MAPICONS = json.loads(data)
 
     #SEARCH_URL = 'https://nominatim.openstreetmap.org/search?format=json&q='
     # test url to be able to force errors
@@ -122,13 +127,12 @@ class NominatimLocatorFilter(QgsLocatorFilter):
                
 
                     icon = QIcon()
-                    if loc.get('icon'):
-                        req = QNetworkRequest(QUrl(str(loc['icon'])))
+                    if '%s:%s' % (loc.get('class'),loc.get('type')) in self.MAPICONS:
+                        #req = QNetworkRequest(QUrl(str(loc['icon'])))
+                        req = QNetworkRequest(QUrl('https://nominatim.openstreetmap.org/ui/mapicons/%s.p.20.png' % (self.MAPICONS[loc['class']+':'+loc['type']])))
                         reply = nam2.blockingGet(req)
                         data = reply.content().data()
-                        #data = urllib.request.urlopen(loc['icon']).read()
                         pixmap.loadFromData(data)
-                        
                     else:
                         # get geomtype from geojson if no icon is provided
                         pixmap = QPixmap('%s/icons/%s.png' % (os.path.dirname(__file__),loc['geojson']['type']))
@@ -159,9 +163,13 @@ class NominatimLocatorFilter(QgsLocatorFilter):
         except:
             doc = result.userData
 
-        geojson = doc['geojson']
-        feature = ogr.CreateGeometryFromJson(str(geojson))
-        wkt = feature.ExportToWkt()
+        geojson = doc.get('geojson')
+        if geojson:
+            feature = ogr.CreateGeometryFromJson(str(geojson))
+            wkt = feature.ExportToWkt()
+        else:
+            wkt = 'POINT(%s %s)' % (doc.get('lon'),doc.get('lat'))
+
         targetSrs = self.iface.mapCanvas().mapSettings().destinationCrs().authid()
         self.showRubberBand(wkt,QgsCoordinateReferenceSystem("EPSG:4326"),QgsCoordinateReferenceSystem(targetSrs))
 
