@@ -80,7 +80,7 @@ class NominatimLocatorFilter(QgsLocatorFilter):
         return NominatimLocatorFilter(self.iface)
 
     def displayName(self):
-        return 'Nominatim Geocoder (end with space to search, use &<txt> for local search)'
+        return 'Nominatim Plugin (end with space to search, use &<txt> for local search)'
 
     def prefix(self):
         return 'osm'
