@@ -8,7 +8,9 @@ from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.PyQt.QtGui import QPixmap, QIcon, QColor, QPainter
 
-import json, os
+import json
+import os
+from pathlib import Path
 from osgeo import ogr, osr
 
 
@@ -46,11 +48,6 @@ class NominatimLocatorFilter(QgsLocatorFilter):
 
     USER_AGENT = 'Mozilla/5.0 QGIS NominatimLocatorFilter'
 
-    # store icon mapping in mapicons dictionary
-    with open('%s/icons/mapicons.json' % os.path.dirname(__file__)) as f: 
-        data = f.read()
-    MAPICONS = json.loads(data)
-
     # SEARCH_URL = 'https://nominatim.openstreetmap.org/search?format=json&q='
     # test url to be able to force errors
     # SEARCH_URL = 'http://duif.net/cgi-bin/qlocatorcheck.cgi?q='
@@ -72,6 +69,28 @@ class NominatimLocatorFilter(QgsLocatorFilter):
         self.iface = iface
         self.rb = iface.rb
         super(QgsLocatorFilter, self).__init__()
+
+        self.icon_dir = Path(os.path.dirname(__file__)) / 'icons'
+        # map icons are sourced from https://github.com/osm-search/nominatim-ui/blob/master/src/components/MapIcon.svelte
+        # which says: equivalent to PHP Nominatim::ClassTypes::getIcon
+        # covers 83 of 214 available icon filenames, e.g. transport_roundabout_anticlockwise
+        # transport_rental_bicycle or place_of_worship_christian would need more data from the place
+        # store icon mapping in MAP_ICONS dictionary
+        with open(self.icon_dir / 'mapicons.json') as f:
+            data = f.read()
+        self.MAP_ICONS = json.loads(data)
+
+        # onetime: we retrieve/cache all used icons in the plugin:
+        # nam2 = QgsNetworkAccessManager.instance()
+        # pixmap = QPixmap()
+        # for key, icon_name in self.MAP_ICONS.items():
+        #     self.info(f"{key} -> {icon_name}")
+        #     png_name = f"{icon_name}.p.20.png"
+        #     req = QNetworkRequest(QUrl(f'https://nominatim.openstreetmap.org/ui/mapicons/{png_name}'))
+        #     reply = nam2.blockingGet(req)
+        #     data = reply.content().data()
+        #     pixmap.loadFromData(data)
+        #     pixmap.save(str(self.icon_dir / png_name))
 
     def name(self):
         return self.__class__.__name__
@@ -122,26 +141,27 @@ class NominatimLocatorFilter(QgsLocatorFilter):
                     # use the json full item as userData, so all info is in it:
                     result.userData = loc
 
-                    # NOTE: commenting this part untill some issues with it are fixed
-                    # icon = QIcon()
-                    # if '%s:%s' % (loc.get('class'),loc.get('type')) in self.MAPICONS:
-                    #     #req = QNetworkRequest(QUrl(str(loc['icon'])))
-                    #     req = QNetworkRequest(QUrl('https://nominatim.openstreetmap.org/ui/mapicons/%s.p.20.png' % (self.MAPICONS[loc['class']+':'+loc['type']])))
-                    #     reply = nam2.blockingGet(req)
-                    #     data = reply.content().data()
-                    #     pixmap.loadFromData(data)
-                    # else:
-                    #     # get geomtype from geojson if no icon is provided
-                    #     pixmap = QPixmap('%s/icons/%s.png' % (os.path.dirname(__file__),loc['geojson']['type']))
-                    #
-                    # # change pixmap background color to white to support dark mode!
-                    # painter = QPainter(pixmap)
-                    # painter.setCompositionMode(QPainter.CompositionMode_DestinationOver)
-                    # painter.fillRect(pixmap.rect(), QColor("white"))
-                    # painter.end()
-                    #
-                    # icon.addPixmap(pixmap, QIcon.Normal, QIcon.Off)
-                    # result.icon = icon
+                    icon = QIcon()
+                    icon_class = loc.get('class')
+                    icon_type = loc.get('type')
+                    icon_key = f'{icon_class}:{icon_type}'
+                    if icon_key in self.MAP_ICONS:
+                        icon_path = self.icon_dir / (self.MAP_ICONS[icon_key] + '.p.20.png')
+                        if icon_path.is_file():
+                            pixmap = QPixmap(str(icon_path))
+                    else:
+                        # get geom type from geojson if no icon is provided, but type still is (note: lower() needed for case sensitive filesystems/linux)
+                        icon_path = self.icon_dir / (loc['geojson']['type'] + '.png').lower()
+                        pixmap = QPixmap(str(icon_path))
+
+                    # change pixmap background color to white to support dark mode!
+                    painter = QPainter(pixmap)
+                    if painter.isActive():
+                        painter.setCompositionMode(QPainter.CompositionMode_DestinationOver)
+                        painter.fillRect(pixmap.rect(), QColor("white"))
+                        painter.end()
+                    icon.addPixmap(pixmap, QIcon.Normal, QIcon.Off)
+                    result.icon = icon
                     self.resultFetched.emit(result)
 
         except Exception as err:
