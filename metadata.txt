@@ -2,18 +2,35 @@
 
 [general]
 name=Nominatim Locator Filter
-description=This is a plugin which adds a Nominatim Locator Filter (Geocoder) to QGIS
+description=This is a plugin which adds an (extra) Nominatim Locator Filter (Geocoder) to QGIS
 about=Nominatim is a free Geocoder service provided by the OpenStreetMap project.
+
     A Locator Filter implements the fetching of data from internal or external sources.
 
+    NOTE that the core functionality of this plugin is now also in the core of QGIS using the <tt>&gt;</tt> prefix.
+    So to use the core QGIS Nominatim Locator you type <tt>"> artis"</tt> to search for 'artis'
+
+    This plugin has some extra features.
+
     Because it is *NOT* allowed to use the Nominatim service as a 'search as you type' service,
-    the locator will not fire a request unless you end your string with a space or enter.
+    see: <a href="https://operations.osmfoundation.org/policies/nominatim/">Nominatim Usage Policy</a>, the locator will not fire a request unless you end your string with a space or enter.
+    So type <tt>"osm artis "</tt> (note the ending space).
 
-    Read more: <a href="http://www.qgis.nl/2018/05/16/english-coding-a-qgslocator-plugin/?lang=en">http://www.qgis.nl/2018/05/16/english-coding-a-qgslocator-plugin</a>
+    Some other tricks:
 
-version=0.3.1
+    To do a local search (so only within current mapcanvas extent), use <tt>&</tt> in front of your search term.
+    So type <tt>"osm &artis "</tt> (note the ampersand and the ending space) when only Zoomed in on France OR on The Netherlands and see the difference.
+
+    Nominatim itself also has some tricks: for example you can add a country code to your search term to ONLY search in that country.
+    See  <tt>"osm &artis nl"</tt> versus  <tt>"osm &artis fr"</tt> (to see artis in The Netherlands or in France)
+
+    The icons used are from the <a href="https://github.com/osm-search/nominatim-ui/tree/master/dist/mapicons">nominatim-ui project</a>
+
+    Read more about creating 'Locators': <a href="http://www.qgis.nl/2018/05/16/english-coding-a-qgslocator-plugin/?lang=en">http://www.qgis.nl/2018/05/16/english-coding-a-qgslocator-plugin</a>
+
+version=0.3.2
 qgisMinimumVersion=3.0
-author=Richard Duivenvoorde, Zuidt
+author=Richard Duivenvoorde and others
 email=richard@zuidt.nl
 
 # Tags are comma separated with spaces allowed
@@ -24,6 +41,7 @@ homepage=https://github.com/rduivenvoorde/nominatim_locator_filter
 repository=https://github.com/rduivenvoorde/nominatim_locator_filter
 
 changelog=
+    0.3.2       update readme's
     0.3.1       add map icons mapping, remove GeometryType from QgsRubberBand initialization to be compatible with QGIS 3.28
     0.3.0       several extensions (show rubberband, icons and local search) by Christoph Candido, Vienna, Austria (christoph.candido@gmx.at)
     0.2.4       remove 'networkmanager'-module dependency (fixes #3)

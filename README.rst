@@ -5,7 +5,10 @@ QGIS Nominatim Locator Filter Plugin
 This is a so called QgsLocator filter for the Nominatim/OpenStreetMap search service, 
 implemented as a QGIS plugin.
 
-Read about writing one here:
+NOTE that the core functionality of this plugin is now also in the core of QGIS using the `>` prefix.
+So to use the core QGIS Nominatim Locator you type `"> artis"` to search for 'artis'.
+
+Read about writing a Locator here:
 
 http://www.qgis.nl/2018/05/16/english-coding-a-qgslocator-plugin/
 
@@ -27,8 +30,8 @@ http://python.qgis.org/api/core/Locator/QgsLocator.html
 
 http://python.qgis.org/api/core/Locator/QgsLocatorFilter.html
 
-QGIS Nominatim Locator Extensions
-=================================
+QGIS Nominatim Locator Plugin Extensions
+========================================
 
 1) Show icons with the search results to visualize the geometry types. This simplifies the selection of the search result.
 
